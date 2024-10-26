@@ -122,16 +122,89 @@ public class Game {
 				objectNode.put("output", boardToArrayNode());
 				return objectNode;
 			case "cardUsesAttack":
-				attackOnBoard(actionsInput.getCardAttacker(), actionsInput.getCardAttacked());
+				AttackingStatus attackingStatus = attackOnBoard(actionsInput.getCardAttacker(), actionsInput.getCardAttacked());
+				if (attackingStatus == AttackingStatus.ATTACKING_STATUS_ALREADY_ATTACKED) {
+					objectNode.put("cardAttacker", actionsInput.getCardAttacker().toObjectNode());
+					objectNode.put("cardAttacked", actionsInput.getCardAttacked().toObjectNode());
+					objectNode.put("error", "Attacker card has already attacked this turn.");
+				} else if (attackingStatus == AttackingStatus.ATTACKING_STATUS_NOT_ENEMY) {
+					objectNode.put("cardAttacker", actionsInput.getCardAttacker().toObjectNode());
+					objectNode.put("cardAttacked", actionsInput.getCardAttacked().toObjectNode());
+					objectNode.put("error", "Attacked card does not belong to the enemy.");
+				} else if (attackingStatus == AttackingStatus.ATTACKING_STATUS_FROZEN) {
+					objectNode.put("cardAttacker", actionsInput.getCardAttacker().toObjectNode());
+					objectNode.put("cardAttacked", actionsInput.getCardAttacked().toObjectNode());
+					objectNode.put("error", "Attacker card is frozen.");
+				} else if (attackingStatus == AttackingStatus.ATTACKING_STATUS_NOT_TANK) {
+					objectNode.put("cardAttacker", actionsInput.getCardAttacker().toObjectNode());
+					objectNode.put("cardAttacked", actionsInput.getCardAttacked().toObjectNode());
+					objectNode.put("error", "Attacked card is not of type 'Tank'.");
+				}
+				break;
+			case "getCardAtPosition":
+				GameCharacter cardAtPosition = getCard(actionsInput.getX(), actionsInput.getY());
 
+				objectNode.put("x", actionsInput.getX());
+				objectNode.put("y", actionsInput.getY());
+				if (cardAtPosition == null) {
+					objectNode.put("output", "No card available at that position.");
+				} else {
+					objectNode.put("output", cardAtPosition.getCard().toObjectNode(false));
+				}
+				return objectNode;
 
 		}
 
 		return null;
 	}
 
-	private void attackOnBoard(Coordinates attacker, Coordinates attacked) {
+	private GameCharacter getCard(int x, int y) {
+		if (x >= board.length)
+			return null;
 
+		if (y >= board[x].size())
+			return null;
+
+		return board[x].get(y);
+	}
+	private AttackingStatus attackOnBoard(Coordinates attacker, Coordinates attacked) {
+		int playerAttacker = attacker.getX() > 1 ? 1 : 2;
+		int playerAttacked = attacked.getX() > 1 ? 1 : 2;
+
+		if (playerAttacked == playerAttacker)
+			return AttackingStatus.ATTACKING_STATUS_NOT_ENEMY;
+
+		GameCharacter attackerCharacter = board[attacker.getX()].get(attacker.getY());
+
+		if (attackerCharacter.isAttackedTurn())
+			return AttackingStatus.ATTACKING_STATUS_ALREADY_ATTACKED;
+
+		if (attackerCharacter.isFrozen())
+			return AttackingStatus.ATTACKING_STATUS_FROZEN;
+		GameCharacter attackedCharacter = board[attacked.getX()].get(attacked.getY());
+
+		int begIndex = (2 - playerAttacked) * 2;
+		boolean validAttacking = true;
+		for (int i = 0; i <= 1 && !attackedCharacter.isTank() && validAttacking; i++) {
+			for (int j = 0; j < board[i + begIndex].size() && validAttacking; j++) {
+				if (i + begIndex != attacked.getX() || j != attacked.getY()) {
+					if (board[i + begIndex].get(j).isTank())
+						validAttacking = false;
+				}
+			}
+		}
+
+		if (!validAttacking)
+			return AttackingStatus.ATTACKING_STATUS_NOT_TANK;
+
+		int newHealth = attackedCharacter.getCard().getHealth() - attackerCharacter.getCard().getAttackDamage();
+
+		if (newHealth <= 0) {
+			board[attacked.getX()].remove(attacked.getY());
+		} else {
+			attackedCharacter.getCard().setHealth(newHealth);
+		}
+		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
 	}
 
 	private void incrementRoundMana() {
@@ -189,4 +262,12 @@ public class Game {
 		return secondPlayer;
 	}
 
+}
+
+enum AttackingStatus {
+	ATTACKING_STATUS_NOT_ENEMY,
+	ATTACKING_STATUS_ALREADY_ATTACKED,
+	ATTACKING_STATUS_SUCCESS,
+	ATTACKING_STATUS_FROZEN,
+	ATTACKING_STATUS_NOT_TANK
 }

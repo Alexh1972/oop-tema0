@@ -1,9 +1,22 @@
 package fileio;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 public final class Coordinates {
    private int x, y;
+   private ObjectMapper objectMapper = new ObjectMapper();
 
    public Coordinates() {
+   }
+
+   public ObjectNode toObjectNode() {
+      ObjectNode objectNodeCoord = objectMapper.createObjectNode();
+
+      objectNodeCoord.put("x", x);
+      objectNodeCoord.put("y", y);
+
+      return objectNodeCoord;
    }
 
    public int getX() {

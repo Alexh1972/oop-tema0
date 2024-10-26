@@ -54,7 +54,7 @@ public final class Main {
             File out = new File(filepath);
             boolean isCreated = out.createNewFile();
             if (isCreated) {
-                if (idx <= 3)
+                if (idx <= 4)
                     action(file.getName(), filepath);
             }
             idx++;
