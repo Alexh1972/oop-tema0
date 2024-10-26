@@ -14,6 +14,8 @@ public class EndPlayerTurn extends Action {
 
 	@Override
 	public ObjectNode execute() {
+		if (Game.getPlayerWon() != 0)
+			return null;
 		boolean firstTurnEnded = game.isFirstTurnEnded();
 		int playerTurn = game.getPlayerTurn();
 		if (game.isFirstTurnEnded()) {
@@ -30,7 +32,7 @@ public class EndPlayerTurn extends Action {
 		game.setFirstTurnEnded(firstTurnEnded);
 		game.setPlayerTurn(playerTurn);
 
-		ArrayList<GameCharacter>[] board = game.getBoard();
+		ArrayList<GameCharacter>[] board = Game.getBoard();
 		for (ArrayList<GameCharacter> gameCharacters : board) {
 			for (GameCharacter gameCharacter : gameCharacters) {
 				gameCharacter.setFrozen(false);
@@ -38,6 +40,10 @@ public class EndPlayerTurn extends Action {
 			}
 		}
 
+		game.getFirstPlayer().getHero().setAttackedTurn(false);
+		game.getSecondPlayer().getHero().setAttackedTurn(false);
+		game.getFirstPlayer().getHero().setFrozen(false);
+		game.getSecondPlayer().getHero().setFrozen(false);
 		return null;
 	}
 }

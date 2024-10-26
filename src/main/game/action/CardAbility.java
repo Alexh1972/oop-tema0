@@ -12,6 +12,8 @@ public class CardAbility extends Action {
 
 	@Override
 	public ObjectNode execute() {
+		if (Game.getPlayerWon() != 0)
+			return null;
 		GameCharacter attackerCharacter = Game.getCard(actionsInput.getCardAttacker().getX(), actionsInput.getCardAttacker().getY());
 
 		if (attackerCharacter != null) {

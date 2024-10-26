@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.ActionsInput;
 import main.game.Game;
-import main.game.Player;
 
 public class Action {
 	protected ActionsInput actionsInput;
@@ -42,6 +41,12 @@ public class Action {
 				return new GetCardAtPosition(actionsInput, game);
 			case "cardUsesAbility":
 				return new CardAbility(actionsInput, game);
+			case "useAttackHero":
+				return new AttackAgainstHero(actionsInput, game);
+			case "useHeroAbility":
+				return new HeroAbility(actionsInput, game);
+			case "getFrozenCardsOnTable":
+				return new GetFrozenCards(actionsInput, game);
 		}
 		return null;
 	}

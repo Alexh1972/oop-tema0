@@ -15,13 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Game {
-	private final Player firstPlayer;
-	private final Player secondPlayer;
+	private static Player firstPlayer;
+	private static Player secondPlayer;
 
 	private int roundMana = 2;
-	private int playerTurn;
+	private static int playerTurn;
 	private boolean firstTurnEnded;
 	private static ArrayList<GameCharacter>[] board;
+
+	private static int playerWon = 0;
 	ObjectMapper objectMapper = new ObjectMapper();
 	public Game(Input input, int gameNo) {
 		GameInput gameInput = input.getGames().get(gameNo);
@@ -38,14 +40,17 @@ public class Game {
 										 .get(gameInput.getStartGame().getPlayerTwoDeckIdx()),
 								 gameInput.getStartGame().getShuffleSeed());
 		playerTurn = gameInput.getStartGame().getStartingPlayer();
+
 		board = new ArrayList[4];
 		for (int i = 0 ; i < board.length; i++)
 			board[i] = new ArrayList<>();
+		playerWon = 0;
 	}
 
 	public ObjectNode handleAction(ActionsInput actionsInput) {
 		Action action = Action.toAction(actionsInput, this);
 
+		System.out.println(actionsInput.getCommand());
 		if (action != null)
 			return action.execute();
 
@@ -70,6 +75,30 @@ public class Game {
 			return null;
 
 		return board[x].get(y);
+	}
+
+	public static void won(int player) {
+		playerWon = player;
+	}
+
+	public AttackingStatus attackAgainstHero(Coordinates attacker) {
+		AttackingStatus attackingStatus = isValidAttack(attacker, true);
+		if (!attackingStatus.equals(AttackingStatus.ATTACKING_STATUS_SUCCESS))
+			return attackingStatus;
+
+		int playerAttacker = attacker.getX() > 1 ? 1 : 2;
+		GameCharacter attackerCharacter = board[attacker.getX()].get(attacker.getY());
+		Player enemy = getEnemyPlayer(playerAttacker);
+		int heroHealth = enemy.getHero().getCard().getHealth();
+
+		heroHealth -= attackerCharacter.getCard().getAttackDamage();
+		enemy.getHero().getCard().setHealth(heroHealth);
+
+		if (heroHealth <= 0) {
+			won(playerAttacker);
+		}
+
+		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
 	}
 	public AttackingStatus attackOnBoard(Coordinates attacker, Coordinates attacked) {
 		AttackingStatus attackingStatus = isValidAttack(attacker, attacked, true);
@@ -126,6 +155,51 @@ public class Game {
 		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
 	}
 
+	public static boolean hasManaForHero(int playerNo) {
+		Player player = getPlayer(playerNo);
+
+		if (player != null) {
+			if (player.getHero().getCard().getMana() <= player.getMana())
+				return true;
+		}
+
+		return false;
+	}
+
+	public void subtractManaFromPlayer(int mana, int playerNo) {
+		Player player = getPlayer(playerNo);
+
+		if (player != null) {
+			player.subtractMana(mana);
+		}
+	}
+
+	public static AttackingStatus isValidAttack(Coordinates attacker, boolean toEnemy) {
+		int playerAttacker = attacker.getX() > 1 ? 1 : 2;
+
+		GameCharacter attackerCharacter = board[attacker.getX()].get(attacker.getY());
+
+		if (attackerCharacter.isAttackedTurn())
+			return AttackingStatus.ATTACKING_STATUS_ALREADY_ATTACKED;
+
+		if (attackerCharacter.isFrozen())
+			return AttackingStatus.ATTACKING_STATUS_FROZEN;
+
+		int begIndex = 2 * playerAttacker - 2;
+		boolean validAttacking = true;
+		for (int i = 0; i <= 1 && validAttacking && toEnemy; i++) {
+			for (int j = 0; j < board[i + begIndex].size() && validAttacking; j++) {
+				if (board[i + begIndex].get(j).isTank())
+					validAttacking = false;
+			}
+		}
+
+		if (!validAttacking)
+			return AttackingStatus.ATTACKING_STATUS_NOT_TANK;
+
+		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
+	}
+
 	public void incrementRoundMana() {
 		if (roundMana == 10)
 			return;
@@ -133,11 +207,21 @@ public class Game {
 		roundMana++;
 	}
 
-	public Player getPlayer(int idx) {
+	public static Player getPlayer(int idx) {
 		if (idx == 1)
 			return firstPlayer;
 		if (idx == 2)
 			return secondPlayer;
+
+		return null;
+	}
+
+	public static Player getEnemyPlayer(int idx) {
+		if (idx == 1)
+			return secondPlayer;
+
+		if (idx == 2)
+			return firstPlayer;
 
 		return null;
 	}
@@ -151,6 +235,19 @@ public class Game {
 				arrayNodeRow.add(gameCharacter.getCard().toObjectNode(false));
 			}
 			arrayNode.add(arrayNodeRow);
+		}
+
+		return arrayNode;
+	}
+
+	public ArrayNode frozenCardsToArrayNode() {
+		ArrayNode arrayNode = objectMapper.createArrayNode();
+
+		for (int i = 0; i < board.length; i++) {
+			for (GameCharacter gameCharacter : board[i]) {
+				if (gameCharacter.isFrozen())
+					arrayNode.add(gameCharacter.getCard().toObjectNode(false));
+			}
 		}
 
 		return arrayNode;
@@ -185,8 +282,12 @@ public class Game {
 		this.roundMana = roundMana;
 	}
 
-	public int getPlayerTurn() {
+	public static int getPlayerTurn() {
 		return playerTurn;
+	}
+
+	public static int getPlayerWon() {
+		return playerWon;
 	}
 
 	public void setPlayerTurn(int playerTurn) {
@@ -201,7 +302,7 @@ public class Game {
 		this.firstTurnEnded = firstTurnEnded;
 	}
 
-	public ArrayList<GameCharacter>[] getBoard() {
+	public static ArrayList<GameCharacter>[] getBoard() {
 		return board;
 	}
 

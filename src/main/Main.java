@@ -54,8 +54,7 @@ public final class Main {
             File out = new File(filepath);
             boolean isCreated = out.createNewFile();
             if (isCreated) {
-                if (idx <= 6)
-                    action(file.getName(), filepath);
+                action(file.getName(), filepath);
             }
             idx++;
         }
@@ -97,8 +96,22 @@ public final class Main {
 
         for (int idxGame = 0; idxGame < inputData.getGames().size(); idxGame++) {
             Game game = new Game(inputData, idxGame);
+            boolean gameIsWon = false;
             for (ActionsInput actionsInput : inputData.getGames().get(idxGame).getActions()) {
                 ObjectNode objectNode = game.handleAction(actionsInput);
+
+                int playerWon = Game.getPlayerWon();
+                if (playerWon != 0 && !gameIsWon) {
+                    gameIsWon = true;
+                    objectNode = objectMapper.createObjectNode();
+
+                    String player = "one";
+                    if (playerWon == 2)
+                        player = "two";
+                    objectNode.put("gameEnded", "Player " + player + " killed the enemy hero.");
+                    output.add(objectNode);
+                    continue;
+                }
 
                 if (objectNode != null)
                     output.add(objectNode);

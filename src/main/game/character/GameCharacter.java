@@ -84,6 +84,10 @@ public class GameCharacter {
 		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
 	}
 
+	public AttackingStatus heroAbility(int player, int row) {
+		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
+	}
+
 	public CardInput getCard() {
 		return card;
 	}

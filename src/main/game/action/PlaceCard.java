@@ -13,6 +13,8 @@ public class PlaceCard extends Action {
 
 	@Override
 	public ObjectNode execute() {
+		if (Game.getPlayerWon() != 0)
+			return null;
 		ObjectNode objectNode = objectMapper.createObjectNode();
 
 		objectNode.put("command", actionsInput.getCommand());
