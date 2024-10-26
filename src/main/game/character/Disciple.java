@@ -6,7 +6,7 @@ public class Disciple extends GameCharacter {
 	public Disciple(CardInput card) {
 		super(card);
 	}
-
+	@Override
 	public int boardPlacementIndex(int noPlayer) {
 		return (2 - noPlayer) * 3;
 	}

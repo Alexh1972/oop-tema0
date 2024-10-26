@@ -7,6 +7,8 @@ import fileio.ActionsInput;
 import fileio.Coordinates;
 import fileio.GameInput;
 import fileio.Input;
+import main.game.action.Action;
+import main.game.action.AttackingStatus;
 import main.game.character.GameCharacter;
 
 import java.util.ArrayList;
@@ -42,123 +44,15 @@ public class Game {
 	}
 
 	public ObjectNode handleAction(ActionsInput actionsInput) {
-		ObjectNode objectNode = objectMapper.createObjectNode();
+		Action action = Action.toAction(actionsInput, this);
 
-		objectNode.put("command", actionsInput.getCommand());
-
-		switch (actionsInput.getCommand()) {
-			case "getPlayerDeck":
-				objectNode.put("playerIdx", actionsInput.getPlayerIdx());
-				Player playerDeck = getPlayer(actionsInput.getPlayerIdx());
-
-				if (playerDeck != null) {
-					objectNode.put("output", playerDeck.getDeck().toArrayNode());
-					return objectNode;
-				}
-				break;
-			case "getCardsInHand":
-				objectNode.put("playerIdx", actionsInput.getPlayerIdx());
-				Player playerHand = getPlayer(actionsInput.getPlayerIdx());
-
-				if (playerHand != null) {
-					objectNode.put("output", playerHand.getHand().toArrayNode());
-					return objectNode;
-				}
-				break;
-			case "getPlayerTurn":
-				objectNode.put("output", playerTurn);
-				return objectNode;
-			case "getPlayerHero":
-				objectNode.put("playerIdx", actionsInput.getPlayerIdx());
-				Player playerHero = getPlayer(actionsInput.getPlayerIdx());
-
-				if (playerHero != null) {
-					objectNode.put("output", playerHero.getHero().getCard().toObjectNode(true));
-					return objectNode;
-				}
-				break;
-			case "getPlayerMana":
-				objectNode.put("playerIdx", actionsInput.getPlayerIdx());
-				Player playerMana = getPlayer(actionsInput.getPlayerIdx());
-
-				if (playerMana != null) {
-					objectNode.put("output", playerMana.getMana());
-					return objectNode;
-				}
-			case "endPlayerTurn":
-				if (firstTurnEnded) {
-					firstPlayer.addMana(roundMana);
-					secondPlayer.addMana(roundMana);
-					incrementRoundMana();
-					firstPlayer.takeCardInHand();
-					secondPlayer.takeCardInHand();
-				}
-
-				firstTurnEnded = !firstTurnEnded;
-				playerTurn = 3 - playerTurn;
-				break;
-			case "placeCard":
-				Player playerPlaceCard = getPlayer(playerTurn);
-
-				if (playerPlaceCard != null) {
-					GameCharacter placedCharacter = playerPlaceCard.placeCardFromHand(actionsInput.getHandIdx());
-
-					if (placedCharacter == null) {
-						objectNode.put("error", "Not enough mana to place card on table.");
-						objectNode.put("handIdx", actionsInput.getHandIdx());
-						return objectNode;
-					}
-
-					int index = placedCharacter.boardPlacementIndex(playerTurn);
-
-					if (!addCharacterToBoard(placedCharacter, index)) {
-						objectNode.put("error", "Cannot place card on table since row is full.");
-						objectNode.put("handIdx", actionsInput.getHandIdx());
-						return objectNode;
-					}
-				}
-				break;
-			case "getCardsOnTable":
-				objectNode.put("output", boardToArrayNode());
-				return objectNode;
-			case "cardUsesAttack":
-				AttackingStatus attackingStatus = attackOnBoard(actionsInput.getCardAttacker(), actionsInput.getCardAttacked());
-				if (attackingStatus == AttackingStatus.ATTACKING_STATUS_ALREADY_ATTACKED) {
-					objectNode.put("cardAttacker", actionsInput.getCardAttacker().toObjectNode());
-					objectNode.put("cardAttacked", actionsInput.getCardAttacked().toObjectNode());
-					objectNode.put("error", "Attacker card has already attacked this turn.");
-				} else if (attackingStatus == AttackingStatus.ATTACKING_STATUS_NOT_ENEMY) {
-					objectNode.put("cardAttacker", actionsInput.getCardAttacker().toObjectNode());
-					objectNode.put("cardAttacked", actionsInput.getCardAttacked().toObjectNode());
-					objectNode.put("error", "Attacked card does not belong to the enemy.");
-				} else if (attackingStatus == AttackingStatus.ATTACKING_STATUS_FROZEN) {
-					objectNode.put("cardAttacker", actionsInput.getCardAttacker().toObjectNode());
-					objectNode.put("cardAttacked", actionsInput.getCardAttacked().toObjectNode());
-					objectNode.put("error", "Attacker card is frozen.");
-				} else if (attackingStatus == AttackingStatus.ATTACKING_STATUS_NOT_TANK) {
-					objectNode.put("cardAttacker", actionsInput.getCardAttacker().toObjectNode());
-					objectNode.put("cardAttacked", actionsInput.getCardAttacked().toObjectNode());
-					objectNode.put("error", "Attacked card is not of type 'Tank'.");
-				}
-				break;
-			case "getCardAtPosition":
-				GameCharacter cardAtPosition = getCard(actionsInput.getX(), actionsInput.getY());
-
-				objectNode.put("x", actionsInput.getX());
-				objectNode.put("y", actionsInput.getY());
-				if (cardAtPosition == null) {
-					objectNode.put("output", "No card available at that position.");
-				} else {
-					objectNode.put("output", cardAtPosition.getCard().toObjectNode(false));
-				}
-				return objectNode;
-
-		}
+		if (action != null)
+			return action.execute();
 
 		return null;
 	}
 
-	private GameCharacter getCard(int x, int y) {
+	public GameCharacter getCard(int x, int y) {
 		if (x >= board.length)
 			return null;
 
@@ -167,7 +61,7 @@ public class Game {
 
 		return board[x].get(y);
 	}
-	private AttackingStatus attackOnBoard(Coordinates attacker, Coordinates attacked) {
+	public AttackingStatus attackOnBoard(Coordinates attacker, Coordinates attacked) {
 		int playerAttacker = attacker.getX() > 1 ? 1 : 2;
 		int playerAttacked = attacked.getX() > 1 ? 1 : 2;
 
@@ -207,7 +101,7 @@ public class Game {
 		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
 	}
 
-	private void incrementRoundMana() {
+	public void incrementRoundMana() {
 		if (roundMana == 10)
 			return;
 
@@ -258,16 +152,41 @@ public class Game {
 		return firstPlayer;
 	}
 
+	public int getRoundMana() {
+		return roundMana;
+	}
+
+	public void setRoundMana(int roundMana) {
+		this.roundMana = roundMana;
+	}
+
+	public int getPlayerTurn() {
+		return playerTurn;
+	}
+
+	public void setPlayerTurn(int playerTurn) {
+		this.playerTurn = playerTurn;
+	}
+
+	public boolean isFirstTurnEnded() {
+		return firstTurnEnded;
+	}
+
+	public void setFirstTurnEnded(boolean firstTurnEnded) {
+		this.firstTurnEnded = firstTurnEnded;
+	}
+
+	public ArrayList<GameCharacter>[] getBoard() {
+		return board;
+	}
+
+	public void setBoard(ArrayList<GameCharacter>[] board) {
+		this.board = board;
+	}
+
 	public Player getSecondPlayer() {
 		return secondPlayer;
 	}
 
 }
 
-enum AttackingStatus {
-	ATTACKING_STATUS_NOT_ENEMY,
-	ATTACKING_STATUS_ALREADY_ATTACKED,
-	ATTACKING_STATUS_SUCCESS,
-	ATTACKING_STATUS_FROZEN,
-	ATTACKING_STATUS_NOT_TANK
-}

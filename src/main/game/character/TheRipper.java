@@ -6,7 +6,7 @@ public class TheRipper extends GameCharacter {
 	public TheRipper(CardInput card) {
 		super(card);
 	}
-
+	@Override
 	public int boardPlacementIndex(int noPlayer) {
 		return 3 - noPlayer;
 	}
