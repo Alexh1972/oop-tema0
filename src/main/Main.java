@@ -54,7 +54,7 @@ public final class Main {
             File out = new File(filepath);
             boolean isCreated = out.createNewFile();
             if (isCreated) {
-                if (idx == 0)
+                if (idx <= 3)
                     action(file.getName(), filepath);
             }
             idx++;
@@ -100,7 +100,8 @@ public final class Main {
             for (ActionsInput actionsInput : inputData.getGames().get(idxGame).getActions()) {
                 ObjectNode objectNode = game.handleAction(actionsInput);
 
-                output.add(objectNode);
+                if (objectNode != null)
+                    output.add(objectNode);
             }
         }
 
