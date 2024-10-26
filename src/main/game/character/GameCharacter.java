@@ -1,6 +1,8 @@
 package main.game.character;
 
 import fileio.CardInput;
+import fileio.Coordinates;
+import main.game.action.AttackingStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,13 +14,12 @@ public class GameCharacter {
 
 	boolean tank;
 
-	public GameCharacter(CardInput card, boolean tank) {
+	boolean abilityToEnemies;
+
+	public GameCharacter(CardInput card, boolean tank, boolean abilityToEnemies) {
 		this.card = card;
 		this.tank = tank;
-	}
-
-	public GameCharacter(CardInput card) {
-		this.card = card;
+		this.abilityToEnemies = abilityToEnemies;
 	}
 
 	public static GameCharacter toGameCharacter(CardInput cardInput) {
@@ -79,6 +80,10 @@ public class GameCharacter {
 		return -1;
 	}
 
+	public AttackingStatus cardAbility(Coordinates attacker, Coordinates attacked) {
+		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
+	}
+
 	public CardInput getCard() {
 		return card;
 	}
@@ -105,5 +110,17 @@ public class GameCharacter {
 
 	public void setTank(boolean tank) {
 		this.tank = tank;
+	}
+
+	public void setCard(CardInput card) {
+		this.card = card;
+	}
+
+	public boolean isAbilityToEnemies() {
+		return abilityToEnemies;
+	}
+
+	public void setAbilityToEnemies(boolean abilityToEnemies) {
+		this.abilityToEnemies = abilityToEnemies;
 	}
 }

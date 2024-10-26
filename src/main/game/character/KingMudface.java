@@ -4,6 +4,6 @@ import fileio.CardInput;
 
 public class KingMudface extends GameCharacter {
 	public KingMudface(CardInput card) {
-		super(card);
+		super(card, false, false);
 	}
 }

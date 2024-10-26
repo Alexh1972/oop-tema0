@@ -21,7 +21,7 @@ public class Game {
 	private int roundMana = 2;
 	private int playerTurn;
 	private boolean firstTurnEnded;
-	private ArrayList<GameCharacter>[] board;
+	private static ArrayList<GameCharacter>[] board;
 	ObjectMapper objectMapper = new ObjectMapper();
 	public Game(Input input, int gameNo) {
 		GameInput gameInput = input.getGames().get(gameNo);
@@ -52,7 +52,17 @@ public class Game {
 		return null;
 	}
 
-	public GameCharacter getCard(int x, int y) {
+	public static void removeCard(int x, int y) {
+		if (x >= board.length)
+			return;
+
+		if (y >= board[x].size())
+			return;
+
+		board[x].remove(y);
+	}
+
+	public static GameCharacter getCard(int x, int y) {
 		if (x >= board.length)
 			return null;
 
@@ -62,11 +72,33 @@ public class Game {
 		return board[x].get(y);
 	}
 	public AttackingStatus attackOnBoard(Coordinates attacker, Coordinates attacked) {
+		AttackingStatus attackingStatus = isValidAttack(attacker, attacked, true);
+		if (!attackingStatus.equals(AttackingStatus.ATTACKING_STATUS_SUCCESS))
+			return attackingStatus;
+
+		GameCharacter attackerCharacter = board[attacker.getX()].get(attacker.getY());
+		GameCharacter attackedCharacter = board[attacked.getX()].get(attacked.getY());
+		int newHealth = attackedCharacter.getCard().getHealth() - attackerCharacter.getCard().getAttackDamage();
+
+		if (newHealth <= 0) {
+			removeCard(attacked.getX(), attacked.getY());
+		} else {
+			attackedCharacter.getCard().setHealth(newHealth);
+		}
+
+		board[attacker.getX()].get(attacker.getY()).setAttackedTurn(true);
+		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
+	}
+
+	public static AttackingStatus isValidAttack(Coordinates attacker, Coordinates attacked, boolean toEnemy) {
 		int playerAttacker = attacker.getX() > 1 ? 1 : 2;
 		int playerAttacked = attacked.getX() > 1 ? 1 : 2;
 
-		if (playerAttacked == playerAttacker)
+		if (playerAttacked == playerAttacker && toEnemy)
 			return AttackingStatus.ATTACKING_STATUS_NOT_ENEMY;
+
+		if (playerAttacked != playerAttacker && !toEnemy)
+			return AttackingStatus.ATTACKING_STATUS_NOT_ALLY;
 
 		GameCharacter attackerCharacter = board[attacker.getX()].get(attacker.getY());
 
@@ -79,7 +111,7 @@ public class Game {
 
 		int begIndex = (2 - playerAttacked) * 2;
 		boolean validAttacking = true;
-		for (int i = 0; i <= 1 && !attackedCharacter.isTank() && validAttacking; i++) {
+		for (int i = 0; i <= 1 && !attackedCharacter.isTank() && validAttacking && toEnemy; i++) {
 			for (int j = 0; j < board[i + begIndex].size() && validAttacking; j++) {
 				if (i + begIndex != attacked.getX() || j != attacked.getY()) {
 					if (board[i + begIndex].get(j).isTank())
@@ -91,13 +123,6 @@ public class Game {
 		if (!validAttacking)
 			return AttackingStatus.ATTACKING_STATUS_NOT_TANK;
 
-		int newHealth = attackedCharacter.getCard().getHealth() - attackerCharacter.getCard().getAttackDamage();
-
-		if (newHealth <= 0) {
-			board[attacked.getX()].remove(attacked.getY());
-		} else {
-			attackedCharacter.getCard().setHealth(newHealth);
-		}
 		return AttackingStatus.ATTACKING_STATUS_SUCCESS;
 	}
 

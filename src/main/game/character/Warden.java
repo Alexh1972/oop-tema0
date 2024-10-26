@@ -4,7 +4,7 @@ import fileio.CardInput;
 
 public class Warden extends GameCharacter {
 	public Warden(CardInput card) {
-		super(card, true);
+		super(card, true, false);
 	}
 	@Override
 	public int boardPlacementIndex(int noPlayer) {

@@ -4,7 +4,7 @@ import fileio.CardInput;
 
 public class Sentinel extends GameCharacter {
 	public Sentinel(CardInput card) {
-		super(card);
+		super(card, false, false);
 	}
 	@Override
 	public int boardPlacementIndex(int noPlayer) {

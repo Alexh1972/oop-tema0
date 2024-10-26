@@ -4,7 +4,7 @@ import fileio.CardInput;
 
 public class Berserker extends GameCharacter {
 	public Berserker(CardInput card) {
-		super(card);
+		super(card, false, true);
 	}
 	@Override
 	public int boardPlacementIndex(int noPlayer) {

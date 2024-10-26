@@ -4,7 +4,7 @@ import fileio.CardInput;
 
 public class Goliath extends GameCharacter {
 	public Goliath(CardInput card) {
-		super(card, true);
+		super(card, true, false);
 	}
 	@Override
 	public int boardPlacementIndex(int noPlayer) {

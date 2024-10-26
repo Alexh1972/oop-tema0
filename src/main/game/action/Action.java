@@ -40,6 +40,8 @@ public class Action {
 				return new CardAttack(actionsInput, game);
 			case "getCardAtPosition":
 				return new GetCardAtPosition(actionsInput, game);
+			case "cardUsesAbility":
+				return new CardAbility(actionsInput, game);
 		}
 		return null;
 	}

@@ -5,6 +5,6 @@ import fileio.CardInput;
 
 public class GeneralKocioraw extends GameCharacter {
 	public GeneralKocioraw(CardInput card) {
-		super(card);
+		super(card, false, false);
 	}
 }

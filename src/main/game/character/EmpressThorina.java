@@ -4,6 +4,6 @@ import fileio.CardInput;
 
 public class EmpressThorina extends GameCharacter {
 	public EmpressThorina(CardInput card) {
-		super(card);
+		super(card, false, true);
 	}
 }

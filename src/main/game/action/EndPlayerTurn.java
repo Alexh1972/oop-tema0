@@ -3,6 +3,9 @@ package main.game.action;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.ActionsInput;
 import main.game.Game;
+import main.game.character.GameCharacter;
+
+import java.util.ArrayList;
 
 public class EndPlayerTurn extends Action {
 	public EndPlayerTurn(ActionsInput actionsInput, Game game) {
@@ -26,6 +29,14 @@ public class EndPlayerTurn extends Action {
 		playerTurn = 3 - playerTurn;
 		game.setFirstTurnEnded(firstTurnEnded);
 		game.setPlayerTurn(playerTurn);
+
+		ArrayList<GameCharacter>[] board = game.getBoard();
+		for (ArrayList<GameCharacter> gameCharacters : board) {
+			for (GameCharacter gameCharacter : gameCharacters) {
+				gameCharacter.setFrozen(false);
+				gameCharacter.setAttackedTurn(false);
+			}
+		}
 
 		return null;
 	}
