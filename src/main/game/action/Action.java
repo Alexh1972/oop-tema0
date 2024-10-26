@@ -47,6 +47,8 @@ public class Action {
 				return new HeroAbility(actionsInput, game);
 			case "getFrozenCardsOnTable":
 				return new GetFrozenCards(actionsInput, game);
+			case "getPlayerOneWins", "getPlayerTwoWins", "getTotalGamesPlayed":
+				return new GetPlayerWins(actionsInput, game);
 		}
 		return null;
 	}

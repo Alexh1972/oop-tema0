@@ -40,6 +40,17 @@ public final class CardInput {
         return objectNode;
     }
 
+    public CardInput deepCopy() {
+        CardInput cardInput = new CardInput();
+        cardInput.setAttackDamage(attackDamage);
+        cardInput.setHealth(health);
+        cardInput.setDescription(description);
+        cardInput.setName(name);
+        cardInput.setMana(mana);
+        cardInput.setColors(colors);
+        return cardInput;
+    }
+
     public int getMana() {
         return mana;
     }

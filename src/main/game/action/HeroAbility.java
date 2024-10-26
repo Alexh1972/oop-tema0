@@ -12,6 +12,8 @@ public class HeroAbility extends Action {
 
 	@Override
 	public ObjectNode execute() {
+		if (Game.getPlayerWon() != 0)
+			return null;
 		ObjectNode objectNode = objectMapper.createObjectNode();
 		int player = Game.getPlayerTurn();
 
@@ -41,6 +43,7 @@ public class HeroAbility extends Action {
 		}
 
 		game.subtractManaFromPlayer(Game.getPlayer(player).getHero().getCard().getMana(), player);
+		Game.getPlayer(player).getHero().setAttackedTurn(true);
 		return null;
 	}
 }

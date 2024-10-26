@@ -123,8 +123,19 @@ public class GameCharacter {
 	public boolean isAbilityToEnemies() {
 		return abilityToEnemies;
 	}
-
 	public void setAbilityToEnemies(boolean abilityToEnemies) {
 		this.abilityToEnemies = abilityToEnemies;
 	}
+	@Override
+	public String toString() {
+		return "GameCharacter{" +
+				"card=" + card +
+				", frozen=" + frozen +
+				", attackedTurn=" + attackedTurn +
+				", tank=" + tank +
+				", abilityToEnemies=" + abilityToEnemies +
+				'}';
+	}
+
+
 }

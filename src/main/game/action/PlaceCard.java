@@ -21,7 +21,7 @@ public class PlaceCard extends Action {
 		Player playerPlaceCard = game.getPlayer(game.getPlayerTurn());
 
 		if (playerPlaceCard != null) {
-			GameCharacter placedCharacter = playerPlaceCard.placeCardFromHand(actionsInput.getHandIdx());
+			GameCharacter placedCharacter = playerPlaceCard.getCardFromHand(actionsInput.getHandIdx());
 
 			if (placedCharacter == null) {
 				objectNode.put("error", "Not enough mana to place card on table.");
@@ -36,6 +36,8 @@ public class PlaceCard extends Action {
 				objectNode.put("handIdx", actionsInput.getHandIdx());
 				return objectNode;
 			}
+
+			playerPlaceCard.removeCardFromHand(actionsInput.getHandIdx());
 		}
 
 		return null;

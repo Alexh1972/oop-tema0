@@ -14,6 +14,8 @@ import main.game.character.GameCharacter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.System.exit;
+
 public class Game {
 	private static Player firstPlayer;
 	private static Player secondPlayer;
@@ -22,9 +24,11 @@ public class Game {
 	private static int playerTurn;
 	private boolean firstTurnEnded;
 	private static ArrayList<GameCharacter>[] board;
-
 	private static int playerWon = 0;
 	ObjectMapper objectMapper = new ObjectMapper();
+	private static int totalGames;
+	private static int playerTwoWins;
+	private static int playerOneWins;
 	public Game(Input input, int gameNo) {
 		GameInput gameInput = input.getGames().get(gameNo);
 
@@ -45,16 +49,34 @@ public class Game {
 		for (int i = 0 ; i < board.length; i++)
 			board[i] = new ArrayList<>();
 		playerWon = 0;
+
+		if (gameNo == 0) {
+			totalGames = 0;
+			playerTwoWins = 0;
+			playerOneWins = 0;
+		}
 	}
 
 	public ObjectNode handleAction(ActionsInput actionsInput) {
 		Action action = Action.toAction(actionsInput, this);
 
-		System.out.println(actionsInput.getCommand());
 		if (action != null)
 			return action.execute();
 
 		return null;
+	}
+
+	public void printBoard() {
+		int i = 0;
+		for (ArrayList<GameCharacter> arrayList : board) {
+			System.out.println(i + ": ");
+			for (GameCharacter gameCharacter : arrayList) {
+				System.out.println(gameCharacter);
+			}
+			i++;
+			System.out.println();
+		}
+		System.out.println();
 	}
 
 	public static void removeCard(int x, int y) {
@@ -79,6 +101,11 @@ public class Game {
 
 	public static void won(int player) {
 		playerWon = player;
+		if (player == 1)
+			playerOneWins++;
+		else
+			playerTwoWins++;
+		totalGames++;
 	}
 
 	public AttackingStatus attackAgainstHero(Coordinates attacker) {
@@ -136,6 +163,8 @@ public class Game {
 
 		if (attackerCharacter.isFrozen())
 			return AttackingStatus.ATTACKING_STATUS_FROZEN;
+		if ( board[attacked.getX()].size() <= attacked.getY())
+			return AttackingStatus.ATTACKING_STATUS_NOT_ENEMY;
 		GameCharacter attackedCharacter = board[attacked.getX()].get(attacked.getY());
 
 		int begIndex = (2 - playerAttacked) * 2;
@@ -176,7 +205,8 @@ public class Game {
 
 	public static AttackingStatus isValidAttack(Coordinates attacker, boolean toEnemy) {
 		int playerAttacker = attacker.getX() > 1 ? 1 : 2;
-
+		if ( board[attacker.getX()].size() <= attacker.getY())
+			return AttackingStatus.ATTACKING_STATUS_NOT_ENEMY;
 		GameCharacter attackerCharacter = board[attacker.getX()].get(attacker.getY());
 
 		if (attackerCharacter.isAttackedTurn())
@@ -314,5 +344,48 @@ public class Game {
 		return secondPlayer;
 	}
 
+	public static void setFirstPlayer(Player firstPlayer) {
+		Game.firstPlayer = firstPlayer;
+	}
+
+	public static void setSecondPlayer(Player secondPlayer) {
+		Game.secondPlayer = secondPlayer;
+	}
+
+	public static void setPlayerWon(int playerWon) {
+		Game.playerWon = playerWon;
+	}
+
+	public ObjectMapper getObjectMapper() {
+		return objectMapper;
+	}
+
+	public void setObjectMapper(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
+
+	public static int getTotalGames() {
+		return totalGames;
+	}
+
+	public static void setTotalGames(int totalGames) {
+		Game.totalGames = totalGames;
+	}
+
+	public static int getPlayerTwoWins() {
+		return playerTwoWins;
+	}
+
+	public static void setPlayerTwoWins(int playerTwoWins) {
+		Game.playerTwoWins = playerTwoWins;
+	}
+
+	public static int getPlayerOneWins() {
+		return playerOneWins;
+	}
+
+	public static void setPlayerOneWins(int playerOneWins) {
+		Game.playerOneWins = playerOneWins;
+	}
 }
 

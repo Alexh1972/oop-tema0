@@ -32,18 +32,20 @@ public class EndPlayerTurn extends Action {
 		game.setFirstTurnEnded(firstTurnEnded);
 		game.setPlayerTurn(playerTurn);
 
-		ArrayList<GameCharacter>[] board = Game.getBoard();
-		for (ArrayList<GameCharacter> gameCharacters : board) {
-			for (GameCharacter gameCharacter : gameCharacters) {
-				gameCharacter.setFrozen(false);
-				gameCharacter.setAttackedTurn(false);
+		if (!firstTurnEnded) {
+			ArrayList<GameCharacter>[] board = Game.getBoard();
+			for (ArrayList<GameCharacter> gameCharacters : board) {
+				for (GameCharacter gameCharacter : gameCharacters) {
+					gameCharacter.setFrozen(false);
+					gameCharacter.setAttackedTurn(false);
+				}
 			}
-		}
 
-		game.getFirstPlayer().getHero().setAttackedTurn(false);
-		game.getSecondPlayer().getHero().setAttackedTurn(false);
-		game.getFirstPlayer().getHero().setFrozen(false);
-		game.getSecondPlayer().getHero().setFrozen(false);
+			game.getFirstPlayer().getHero().setAttackedTurn(false);
+			game.getSecondPlayer().getHero().setAttackedTurn(false);
+			game.getFirstPlayer().getHero().setFrozen(false);
+			game.getSecondPlayer().getHero().setFrozen(false);
+		}
 		return null;
 	}
 }

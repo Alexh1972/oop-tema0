@@ -75,31 +75,11 @@ public final class Main {
 
         ArrayNode output = objectMapper.createArrayNode();
 
-        /*
-         * TODO Implement your function here
-         *
-         * How to add output to the output array?
-         * There are multiple ways to do this, here is one example:
-         *
-         * ObjectMapper mapper = new ObjectMapper();
-         *
-         * ObjectNode objectNode = mapper.createObjectNode();
-         * objectNode.put("field_name", "field_value");
-         *
-         * ArrayNode arrayNode = mapper.createArrayNode();
-         * arrayNode.add(objectNode);
-         *
-         * output.add(arrayNode);
-         * output.add(objectNode);
-         *
-         */
-
         for (int idxGame = 0; idxGame < inputData.getGames().size(); idxGame++) {
             Game game = new Game(inputData, idxGame);
             boolean gameIsWon = false;
             for (ActionsInput actionsInput : inputData.getGames().get(idxGame).getActions()) {
                 ObjectNode objectNode = game.handleAction(actionsInput);
-
                 int playerWon = Game.getPlayerWon();
                 if (playerWon != 0 && !gameIsWon) {
                     gameIsWon = true;
