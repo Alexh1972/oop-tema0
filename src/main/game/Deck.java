@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import fileio.CardInput;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Deck {
@@ -12,6 +13,10 @@ public class Deck {
 
 	public Deck(List<CardInput> cards) {
 		this.cards = cards;
+	}
+	public Deck(CardInput card) {
+		this.cards = new ArrayList<>();
+		this.cards.add(card);
 	}
 
 	public List<CardInput> getCards() {
@@ -22,7 +27,7 @@ public class Deck {
 		ArrayNode arrayNode = objectMapper.createArrayNode();
 
 		for (CardInput cardInput : cards) {
-			arrayNode.add(cardInput.toObjectNode());
+			arrayNode.add(cardInput.toObjectNode(false));
 		}
 
 		return arrayNode;

@@ -20,10 +20,13 @@ public final class CardInput {
     public CardInput() {
     }
 
-    public ObjectNode toObjectNode() {
+    public ObjectNode toObjectNode(boolean isHero) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("mana", mana);
-        objectNode.put("attackDamage", attackDamage);
+
+        if (!isHero)
+            objectNode.put("attackDamage", attackDamage);
+
         objectNode.put("health", health);
         objectNode.put("description", description);
 

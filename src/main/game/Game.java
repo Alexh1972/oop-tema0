@@ -9,6 +9,9 @@ import fileio.Input;
 public class Game {
 	private final Player firstPlayer;
 	private final Player secondPlayer;
+
+	private int roundMana = 1;
+	private int playerTurn;
 	ObjectMapper objectMapper = new ObjectMapper();
 	public Game(Input input, int gameNo) {
 		GameInput gameInput = input.getGames().get(gameNo);
@@ -24,6 +27,7 @@ public class Game {
 										 .getDecks()
 										 .get(gameInput.getStartGame().getPlayerTwoDeckIdx()),
 								 gameInput.getStartGame().getShuffleSeed());
+		playerTurn = gameInput.getStartGame().getStartingPlayer();
 	}
 
 	public ObjectNode handleAction(ActionsInput actionsInput) {
@@ -31,15 +35,47 @@ public class Game {
 
 		objectNode.put("command", actionsInput.getCommand());
 
-		if (actionsInput.getCommand().equals("getPlayerDeck")) {
-			objectNode.put("playerIdx", actionsInput.getPlayerIdx());
-			Player player = getPlayer(actionsInput.getPlayerIdx());
-			System.out.println(player);
-			if (player != null) {
-				objectNode.put("output", player.getDeck().toArrayNode());
+		switch (actionsInput.getCommand()) {
+			case "getPlayerDeck":
+				objectNode.put("playerIdx", actionsInput.getPlayerIdx());
+				Player playerDeck = getPlayer(actionsInput.getPlayerIdx());
+
+				if (playerDeck != null) {
+					objectNode.put("output", playerDeck.getDeck().toArrayNode());
+					return objectNode;
+				}
+				break;
+			case "getPlayerTurn":
+				objectNode.put("output", playerTurn);
 				return objectNode;
-			}
+			case "getPlayerHero":
+				objectNode.put("playerIdx", actionsInput.getPlayerIdx());
+				Player playerHero = getPlayer(actionsInput.getPlayerIdx());
+
+				if (playerHero != null) {
+					objectNode.put("output", playerHero.getHero().toObjectNode(true));
+					return objectNode;
+				}
+				break;
+
 		}
+
+		return null;
+	}
+
+
+	private void incrementMana() {
+		if (roundMana == 10)
+			return;
+
+		roundMana++;
+	}
+
+	public Player getPlayer(int idx) {
+		if (idx == 1)
+			return firstPlayer;
+		if (idx == 2)
+			return secondPlayer;
 
 		return null;
 	}
@@ -60,12 +96,4 @@ public class Game {
 		return secondPlayer;
 	}
 
-	public Player getPlayer(int idx) {
-		if (idx == 1)
-			return firstPlayer;
-		if (idx == 2)
-			return secondPlayer;
-
-		return null;
-	}
 }
